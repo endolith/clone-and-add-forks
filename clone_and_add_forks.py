@@ -26,7 +26,7 @@ def run_command(command):
 
 def clone_repo(upstream_url, username):
     repo_name = upstream_url.split('/')[-1].replace('.git', '')
-    clone_url = f"git@github.com:{username}/{repo_name}.git"
+    clone_url = f"https://github.com/{username}/{repo_name}.git"
     run_command(f"git clone {clone_url}")
     os.chdir(repo_name)
     run_command(f"git remote add upstream {upstream_url}")
