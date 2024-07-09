@@ -50,8 +50,10 @@ def clone_repo(upstream_url, username):
     """
     repo_name = upstream_url.split('/')[-1].replace('.git', '')
     clone_url = f"https://github.com/{username}/{repo_name}.git"
+    print(f"Cloning repository from {clone_url}")
     run_command(f"git clone {clone_url}")
     os.chdir(repo_name)
+    print(f"Adding upstream remote {upstream_url}")
     run_command(f"git remote add upstream {upstream_url}")
     run_command("git fetch upstream")
     return repo_name
@@ -68,11 +70,13 @@ def add_forks_as_remotes(upstream_url):
     repo_name = upstream_url.split('/')[-1].replace('.git', '')
     forks_url = ("https://api.github.com/repos/"
                  f"{original_owner}/{repo_name}/forks")
+    print(f"Fetching forks from {forks_url}")
     response = requests.get(forks_url)
     forks = response.json()
     for fork in forks:
         fork_owner = fork['owner']['login']
         fork_url = fork['clone_url']
+        print(f"Adding remote for fork owned by {fork_owner}: {fork_url}")
         run_command(f"git remote add {fork_owner} {fork_url}")
     print("All remotes have been added successfully.")
 
