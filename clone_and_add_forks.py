@@ -14,13 +14,13 @@ import sys
 import requests
 
 
-def clone_repo(username, repo_name):
+def clone_repo(repo_name, username):
     """
     Clone the user's fork of the repository.
 
     Parameters:
-    username (str): The GitHub username of the user.
     repo_name (str): The name of the repository.
+    username (str): The GitHub username of the user.
     """
     clone_url = f"https://github.com/{username}/{repo_name}.git"
     print(f"Cloning repository from {clone_url}", flush=True)
@@ -43,7 +43,7 @@ def add_upstream_remote(repo_name, original_owner):
     subprocess.run(["git", "fetch", "upstream"], check=True)
 
 
-def add_forks_as_remotes(repo_name, original_owner):
+def add_forks_as_remotes(repo_name, original_owner, username):
     """
     Add all forks of the original repository as remotes, named by the
     fork owner's username.
@@ -51,6 +51,7 @@ def add_forks_as_remotes(repo_name, original_owner):
     Parameters:
     repo_name (str): The name of the repository.
     original_owner (str): The owner of the original repository.
+    username (str): The GitHub username of the user.
     """
     forks_url = ("https://api.github.com/repos/"
                  f"{original_owner}/{repo_name}/forks")
@@ -59,6 +60,8 @@ def add_forks_as_remotes(repo_name, original_owner):
     forks = response.json()
     for fork in forks:
         fork_owner = fork['owner']['login']
+        if fork_owner == username:
+            continue
         fork_url = fork['clone_url']
         print("Adding remote for fork owned by "
               f"{fork_owner}: {fork_url}", flush=True)
@@ -72,20 +75,16 @@ def main():
     Main function to clone the repository and add forks as remotes.
     """
     if len(sys.argv) != 3:
-        print("Usage: python clone_and_add_forks.py <username> <repo_name>", flush=True)
+        print("Usage: python clone_and_add_forks.py <repo_name> <username>", flush=True)
         sys.exit(1)
 
-    username = sys.argv[1]
-    repo_url = sys.argv[2]
+    repo_name_full = sys.argv[1]
+    username = sys.argv[2]
+    original_owner, repo_name = repo_name_full.split('/')
 
-    # Extract original owner and repo name from the URL
-    parts = repo_url.split('/')
-    original_owner = parts[-2]
-    repo_name = parts[-1].replace('.git', '')
-
-    clone_repo(username, repo_name)
+    clone_repo(repo_name, username)
     add_upstream_remote(repo_name, original_owner)
-    add_forks_as_remotes(repo_name, original_owner)
+    add_forks_as_remotes(repo_name, original_owner, username)
 
 
 if __name__ == "__main__":
