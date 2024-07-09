@@ -15,6 +15,19 @@ import requests
 
 
 def run_command(command):
+    """
+    Runs a shell command and captures the output.
+
+    Parameters:
+    command (str): The shell command to run.
+
+    Returns:
+    str: The standard output from the command.
+
+    Raises:
+    SystemExit: If the command returns a non-zero exit code.
+    """
+    print(f"Running command: {command}")
     result = subprocess.run(command, shell=True,
                             capture_output=True, text=True)
     if result.returncode != 0:
@@ -25,6 +38,16 @@ def run_command(command):
 
 
 def clone_repo(upstream_url, username):
+    """
+    Clones the user's fork of the repository and adds the original repository as upstream.
+
+    Parameters:
+    upstream_url (str): The URL of the original repository.
+    username (str): The GitHub username of the user.
+
+    Returns:
+    str: The name of the cloned repository.
+    """
     repo_name = upstream_url.split('/')[-1].replace('.git', '')
     clone_url = f"https://github.com/{username}/{repo_name}.git"
     run_command(f"git clone {clone_url}")
@@ -35,6 +58,12 @@ def clone_repo(upstream_url, username):
 
 
 def add_forks_as_remotes(upstream_url):
+    """
+    Adds all forks of the original repository as remotes, named by the fork owner's username.
+
+    Parameters:
+    upstream_url (str): The URL of the original repository.
+    """
     original_owner = upstream_url.split('/')[-2]
     repo_name = upstream_url.split('/')[-1].replace('.git', '')
     forks_url = ("https://api.github.com/repos/"
@@ -49,6 +78,9 @@ def add_forks_as_remotes(upstream_url):
 
 
 def main():
+    """
+    Main function to clone the repository and add forks as remotes.
+    """
     if len(sys.argv) != 3:
         print("Usage: python clone_and_add_forks.py "
               "<upstream_url> <github_username>")
