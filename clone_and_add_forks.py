@@ -57,7 +57,7 @@ def main():
     upstream_url = sys.argv[1]
     github_username = sys.argv[2]
 
-    repo_name = clone_repo(upstream_url, github_username)
+    clone_repo(upstream_url, github_username)
     add_forks_as_remotes(upstream_url)
 
 
