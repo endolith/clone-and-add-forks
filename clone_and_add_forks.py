@@ -37,8 +37,8 @@ def clone_repo(upstream_url, username):
 def add_forks_as_remotes(upstream_url):
     original_owner = upstream_url.split('/')[-2]
     repo_name = upstream_url.split('/')[-1].replace('.git', '')
-    forks_url = f"https://api.github.com/repos/{
-        original_owner}/{repo_name}/forks"
+    forks_url = ("https://api.github.com/repos/"
+                 f"{original_owner}/{repo_name}/forks")
     response = requests.get(forks_url)
     forks = response.json()
     for fork in forks:
