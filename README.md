@@ -4,9 +4,9 @@ Clone a GitHub fork as origin, add upstream, and add all other forks as remotes.
 
 ## Features
 
-- Clone your fork of a repository as the origin remote.
-- Add the original repository as the upstream remote.
-- Automatically add all forks of the original repository as remotes, named by the fork owner's username.
+- Clone your fork of a repository as the `origin` remote.
+- Add the original repository as the `upstream` remote.
+- Automatically add all forks of the original repository as remotes, named as the fork owner's username.
 
 ## Usage
 
