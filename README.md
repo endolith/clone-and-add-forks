@@ -50,7 +50,3 @@ Adding remote for fork owned by domeav: https://github.com/domeav/whole_history_
 Adding remote for fork owned by jesesun: https://github.com/jesesun/whole_history_rating.git
 All remotes have been added successfully.
 ```
-
-## License
-
-This project is licensed under the Unlicense.
