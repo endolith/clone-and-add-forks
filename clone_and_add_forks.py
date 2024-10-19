@@ -75,7 +75,12 @@ def main():
     Main function to clone the repository and add forks as remotes.
     """
     if len(sys.argv) != 3:
-        print("Usage: python clone_and_add_forks.py <repo_url> <username>", flush=True)
+        print("Usage: python clone_and_add_forks.py <repo_url> <username>",
+              flush=True)
+        print("  <repo_url>: The full URL of the upstream GitHub repository "
+              "(e.g., https://github.com/owner/repo)")
+        print("  <username>: Your GitHub username (the owner of the origin "
+              "fork you want to clone)")
         sys.exit(1)
 
     repo_url = sys.argv[1]
