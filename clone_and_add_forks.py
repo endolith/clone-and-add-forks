@@ -16,30 +16,47 @@ import requests
 
 def clone_repo(repo_name, username):
     """
-    Clone the user's fork of the repository.
+    Clone the user's fork of the repository, or verify existing clone.
 
     Parameters:
     repo_name (str): The name of the repository.
     username (str): The GitHub username of the user.
     """
     clone_url = f"https://github.com/{username}/{repo_name}.git"
-    print(f"Cloning repository from {clone_url}", flush=True)
-    subprocess.run(["git", "clone", clone_url], check=True)
-    os.chdir(repo_name)
+    if os.path.exists(repo_name):
+        print(f"Repository {repo_name} already exists, verifying remotes...",
+              flush=True)
+        os.chdir(repo_name)
+    else:
+        print(f"Cloning repository from {clone_url}", flush=True)
+        subprocess.run(["git", "clone", clone_url], check=True)
+        os.chdir(repo_name)
 
 
 def add_upstream_remote(repo_name, original_owner):
     """
-    Add the original repository as upstream.
+    Add or verify the original repository as upstream.
 
     Parameters:
     repo_name (str): The name of the repository.
     original_owner (str): The owner of the original repository.
     """
     upstream_url = f"https://github.com/{original_owner}/{repo_name}.git"
-    print(f"Adding upstream remote {upstream_url}", flush=True)
-    subprocess.run(["git", "remote", "add", "upstream",
-                   upstream_url], check=True)
+
+    # Check if upstream remote exists
+    result = subprocess.run(["git", "remote", "get-url", "upstream"],
+                            capture_output=True, text=True)
+
+    if result.returncode == 0:
+        current_upstream = result.stdout.strip()
+        if current_upstream != upstream_url:
+            raise ValueError(f"Upstream URL {current_upstream} doesn't match "
+                             f"expected {upstream_url}")
+    else:
+        print(f"Adding upstream remote {upstream_url}", flush=True)
+        subprocess.run(["git", "remote", "add", "upstream",
+                       upstream_url], check=True)
+
     subprocess.run(["git", "fetch", "upstream"], check=True)
 
 
@@ -53,6 +70,10 @@ def add_forks_as_remotes(repo_name, original_owner, username):
     original_owner (str): The owner of the original repository.
     username (str): The GitHub username of the user.
     """
+    # Get existing remotes
+    result = subprocess.run(["git", "remote"], capture_output=True, text=True)
+    existing_remotes = set(result.stdout.strip().split('\n'))
+
     forks_url = ("https://api.github.com/repos/"
                  f"{original_owner}/{repo_name}/forks")
     print(f"Fetching forks from {forks_url}", flush=True)
@@ -60,7 +81,7 @@ def add_forks_as_remotes(repo_name, original_owner, username):
     forks = response.json()
     for fork in forks:
         fork_owner = fork['owner']['login']
-        if fork_owner == username:
+        if fork_owner == username or fork_owner in existing_remotes:
             continue
         fork_url = fork['clone_url']
         print("Adding remote for fork owned by "
