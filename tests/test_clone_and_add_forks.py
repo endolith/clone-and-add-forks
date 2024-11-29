@@ -120,16 +120,47 @@ def test_existing_repository(temp_dir):
     """Test that the script handles existing repositories correctly."""
     from clone_and_add_forks import main
 
-    # First run to create the repo
-    sys.argv = [
-        'clone_and_add_forks.py',
-        'https://github.com/octocat/Hello-World',
-        'endolith'
-    ]
-    main()
+    original_argv = sys.argv
+    try:
+        # First run to create the repo
+        sys.argv = [
+            'clone_and_add_forks.py',
+            'https://github.com/octocat/Hello-World',
+            'endolith'
+        ]
+        main()
 
-    # Second run should handle existing repo
-    main()
+        # Capture the initial state
+        result = subprocess.run(
+            ["git", "remote", "-v"],
+            capture_output=True, text=True, check=True
+        )
+        initial_remotes = set(line.split()[0]
+                              for line in result.stdout.strip().split('\n'))
+
+        # Run it again
+        main()
+
+        # Verify final state
+        result = subprocess.run(
+            ["git", "remote", "-v"],
+            capture_output=True, text=True, check=True
+        )
+        final_remotes = set(line.split()[0]
+                            for line in result.stdout.strip().split('\n'))
+
+        # Verify that:
+        # 1. We have the essential remotes
+        assert 'origin' in final_remotes
+        assert 'upstream' in final_remotes
+        # 2. We didn't lose any remotes
+        assert initial_remotes.issubset(final_remotes)
+        # 3. Each remote appears exactly twice (fetch and push)
+        remote_lines = result.stdout.strip().split('\n')
+        assert len(remote_lines) == len(final_remotes) * 2
+
+    finally:
+        sys.argv = original_argv
 
 
 def test_mismatched_upstream(temp_dir):
