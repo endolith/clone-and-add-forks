@@ -107,8 +107,21 @@ def main():
     repo_url = sys.argv[1]
     username = sys.argv[2]
 
+    # Validate URL format
+    if not repo_url.startswith('https://github.com/'):
+        raise ValueError(
+            f"Invalid GitHub URL: {repo_url}\n"
+            "URL must start with 'https://github.com/'"
+        )
+
     # Extract original owner and repo name from the URL
     parts = repo_url.split('/')
+    if len(parts) < 5:  # ['https:', '', 'github.com', 'owner', 'repo']
+        raise ValueError(
+            f"Invalid GitHub URL format: {repo_url}\n"
+            "Expected format: https://github.com/owner/repo"
+        )
+
     original_owner = parts[-2]
     repo_name = parts[-1].replace('.git', '')
 
