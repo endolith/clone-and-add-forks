@@ -2,9 +2,10 @@ import os
 import subprocess
 import sys
 import tempfile
-from pathlib import Path
 
 import pytest
+
+from clone_and_add_forks import add_upstream_remote, main
 
 
 @pytest.fixture
@@ -27,8 +28,6 @@ def argv():
 
 def test_no_arguments(temp_dir, capsys, argv):
     """Test that the script shows usage when no arguments are given."""
-    from clone_and_add_forks import main
-
     sys.argv = ['clone_and_add_forks.py']
     with pytest.raises(SystemExit) as exc_info:
         main()
@@ -43,8 +42,6 @@ def test_no_arguments(temp_dir, capsys, argv):
 
 def test_invalid_url(temp_dir, argv):
     """Test that the script handles invalid URLs gracefully."""
-    from clone_and_add_forks import main
-
     sys.argv = [
         'clone_and_add_forks.py',
         'not_a_url',
@@ -62,10 +59,6 @@ def test_hello_world_integration(temp_dir, argv):
     Integration test using the famous octocat/Hello-World repository.
     This tests how the script handles a repository with thousands of forks.
     """
-    import sys
-    sys.path.append(str(Path(__file__).parent.parent))
-    from clone_and_add_forks import main
-
     # Set up test arguments
     sys.argv = [
         'clone_and_add_forks.py',
@@ -109,8 +102,6 @@ def test_hello_world_integration(temp_dir, argv):
 
 def test_existing_repository(temp_dir, argv):
     """Test that the script handles existing repositories correctly."""
-    from clone_and_add_forks import main
-
     # First run to create the repo
     sys.argv = [
         'clone_and_add_forks.py',
@@ -151,7 +142,6 @@ def test_existing_repository(temp_dir, argv):
 
 def test_mismatched_upstream(temp_dir):
     """Test that the script detects mismatched upstream URLs."""
-    from clone_and_add_forks import add_upstream_remote, main
 
     # Set up a repo with wrong upstream
     os.makedirs('Hello-World')
