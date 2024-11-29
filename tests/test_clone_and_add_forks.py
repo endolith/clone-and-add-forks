@@ -50,8 +50,7 @@ def test_invalid_url(temp_dir, argv):
     with pytest.raises(ValueError) as exc_info:
         main()
     assert "Invalid GitHub URL" in str(exc_info.value)
-    assert "URL must start with 'https://github.com/'" in str(
-        exc_info.value)
+    assert "URL must start with 'https://github.com/'" in str(exc_info.value)
 
 
 def test_hello_world_integration(temp_dir, argv):
