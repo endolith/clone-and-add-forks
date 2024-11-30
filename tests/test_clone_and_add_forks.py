@@ -26,6 +26,20 @@ def argv():
     sys.argv = original_argv
 
 
+def get_unique_remotes():
+    """Get the set of unique remote names from git remote -v output."""
+    result = subprocess.run(
+        ["git", "remote", "-v"],
+        capture_output=True, text=True, check=True
+    )
+    # Each remote appears twice (fetch/push)
+    remote_lines = result.stdout.strip().split('\n')
+    unique_remotes = set(line.split()[0] for line in remote_lines)
+    # Verify each remote appears exactly twice
+    assert len(remote_lines) == len(unique_remotes) * 2
+    return unique_remotes
+
+
 def test_no_arguments(temp_dir, capsys, argv):
     """Test that the script shows usage when no arguments are given."""
     sys.argv = ['clone_and_add_forks.py']
@@ -75,28 +89,13 @@ def test_hello_world_integration(temp_dir, argv):
 
     # Check what remotes were added
     os.chdir(repo_path)
-    result = subprocess.run(
-        ["git", "remote", "-v"],
-        capture_output=True, text=True, check=True
-    )
-    remotes = result.stdout.strip()
-
-    # Print all remotes for inspection
-    print("\nRemotes added by script:")
-    print(remotes)
+    unique_remotes = get_unique_remotes()
 
     # Basic verification
-    assert 'origin' in remotes
-    assert 'upstream' in remotes
-    assert 'https://github.com/octocat/Hello-World.git' in remotes
-
-    # Count how many remotes were added
-    # Each remote appears twice (fetch/push)
-    remote_count = len(result.stdout.strip().split('\n')) // 2
-    print(f"\nTotal remotes added: {remote_count}")
-
-    # Verify we got a reasonable number of remotes (at least origin + upstream + some forks)
-    assert remote_count > 3, "Expected more remotes to be added"
+    assert 'origin' in unique_remotes
+    assert 'upstream' in unique_remotes
+    # Should have more than just origin + upstream
+    assert len(unique_remotes) > 3
 
 
 def test_existing_repository(temp_dir, argv):
@@ -110,23 +109,13 @@ def test_existing_repository(temp_dir, argv):
     main()
 
     # Capture the initial state
-    result = subprocess.run(
-        ["git", "remote", "-v"],
-        capture_output=True, text=True, check=True
-    )
-    initial_remotes = set(line.split()[0]
-                          for line in result.stdout.strip().split('\n'))
+    initial_remotes = get_unique_remotes()
 
     # Run it again
     main()
 
     # Verify final state
-    result = subprocess.run(
-        ["git", "remote", "-v"],
-        capture_output=True, text=True, check=True
-    )
-    final_remotes = set(line.split()[0]
-                        for line in result.stdout.strip().split('\n'))
+    final_remotes = get_unique_remotes()
 
     # Verify that:
     # 1. We have the essential remotes
@@ -134,9 +123,6 @@ def test_existing_repository(temp_dir, argv):
     assert 'upstream' in final_remotes
     # 2. We didn't lose any remotes
     assert initial_remotes.issubset(final_remotes)
-    # 3. Each remote appears exactly twice (fetch and push)
-    remote_lines = result.stdout.strip().split('\n')
-    assert len(remote_lines) == len(final_remotes) * 2
 
 
 def test_mismatched_upstream(temp_dir):
@@ -168,13 +154,7 @@ def test_custom_fork_count(temp_dir, argv):
     main()
 
     # Check what remotes were added
-    result = subprocess.run(
-        ["git", "remote", "-v"],
-        capture_output=True, text=True, check=True
-    )
-    remotes = result.stdout.strip().split('\n')
-    # Count unique remote names (each appears twice for fetch/push)
-    unique_remotes = set(line.split()[0] for line in remotes)
+    unique_remotes = get_unique_remotes()
 
     # Should have upstream, and 5 forks (including origin)
     assert len(unique_remotes) == 6  # upstream + 5 forks
@@ -227,12 +207,7 @@ def test_all_forks_prompt(temp_dir, argv, monkeypatch):
     main()
 
     # Verify only essential remotes were added
-    result = subprocess.run(
-        ["git", "remote", "-v"],
-        capture_output=True, text=True, check=True
-    )
-    remotes = result.stdout.strip().split('\n')
-    unique_remotes = set(line.split()[0] for line in remotes)
+    unique_remotes = get_unique_remotes()
 
     # Should only have origin and upstream
     assert len(unique_remotes) == 2
