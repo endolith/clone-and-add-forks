@@ -28,7 +28,7 @@ def clone_repo(repo_name, username):
               flush=True)
         os.chdir(repo_name)
     else:
-        print(f"Cloning repository from {clone_url}", flush=True)
+        print(f"Cloning repository from {clone_url}\n", flush=True)
         subprocess.run(["git", "clone", clone_url], check=True)
         os.chdir(repo_name)
 
@@ -60,15 +60,15 @@ def add_upstream_remote(repo_name, original_owner):
     subprocess.run(["git", "fetch", "upstream"], check=True)
 
 
-def add_forks_as_remotes(repo_name, original_owner, username):
+def add_forks_as_remotes(repo_name, original_owner, username, num_forks=30):
     """
-    Add all forks of the original repository as remotes, named by the
-    fork owner's username.
+    Add forks of the original repository as remotes, named by the fork owner's username.
 
     Parameters:
     repo_name (str): The name of the repository.
     original_owner (str): The owner of the original repository.
     username (str): The GitHub username of the user.
+    num_forks (int or None): Number of forks to add (None for all forks)
     """
     # Get existing remotes
     result = subprocess.run(["git", "remote"], capture_output=True, text=True)
@@ -80,42 +80,85 @@ def add_forks_as_remotes(repo_name, original_owner, username):
     repo_info = response.json()
     total_forks = repo_info['forks_count']
 
+    print(f"\nRepository has {total_forks} forks total.", flush=True)
+    if num_forks is None:
+        print("fetching all of them...", flush=True)
+        if total_forks > 100:
+            response = input(f"Warning: Fetching {total_forks} forks. "
+                             "Continue? (y/N) ")
+            if response.lower() != 'y':
+                print("Aborted.", flush=True)
+                return
+    else:
+        print(f"Fetching up to {num_forks} forks...", flush=True)
+
     # Get forks (GitHub API paginates, typically 30 per page)
     forks_url = f"{repo_url}/forks"
-    print(f"Repository has {total_forks} forks total", flush=True)
-    print(f"Fetching first page of forks from {forks_url}", flush=True)
+    forks_added = 0
+    forks_processed = 0
+    page = 1
 
-    response = requests.get(forks_url)
-    forks = response.json()
-    print(f"Processing {len(forks)} forks from first page", flush=True)
+    while True:
+        # Fetching page {page} from {forks_url}
+        response = requests.get(forks_url, params={'page': page})
+        forks = response.json()
 
-    for fork in forks:
-        fork_owner = fork['owner']['login']
-        if fork_owner == username or fork_owner in existing_remotes:
-            continue
-        fork_url = fork['clone_url']
-        print("Adding remote for fork owned by "
-              f"{fork_owner}: {fork_url}", flush=True)
-        subprocess.run(
-            ["git", "remote", "add", fork_owner, fork_url], check=True)
-    print("All remotes have been added successfully.", flush=True)
+        if not forks:  # No more forks to process
+            break
+
+        # Processing {len(forks)} forks from page {page}
+        for fork in forks:
+            fork_owner = fork['owner']['login']
+            forks_processed += 1
+
+            # Skip if it's our own fork or if remote already exists
+            if fork_owner == username or fork_owner in existing_remotes:
+                print(f"Skipping {fork_owner} (already exists)", flush=True)
+                if num_forks is not None and forks_processed >= num_forks:
+                    print(f"Processed {num_forks} forks ({forks_added} added, "
+                          f"{forks_processed - forks_added} skipped).",
+                          flush=True)
+                    return
+                continue
+
+            fork_url = fork['clone_url']
+            print("Adding remote for fork owned by "
+                  f"{fork_owner}: {fork_url}", flush=True)
+            subprocess.run(
+                ["git", "remote", "add", fork_owner, fork_url], check=True)
+            forks_added += 1
+            # Add to set to prevent duplicates
+            existing_remotes.add(fork_owner)
+
+            if num_forks is not None and forks_processed >= num_forks:
+                print(f"Processed {num_forks} forks ({forks_added} added, "
+                      f"{forks_processed - forks_added} skipped).", flush=True)
+                return
+
+        page += 1
+
+    print(f"Added {forks_added} new forks, skipped "
+          f"{forks_processed - forks_added}.", flush=True)
 
 
 def main():
     """
     Main function to clone the repository and add forks as remotes.
     """
-    if len(sys.argv) != 3:
-        print("Usage: python clone_and_add_forks.py <repo_url> <username>",
+    if len(sys.argv) not in (3, 4):
+        print("Usage: python clone_and_add_forks.py <repo_url> <username> [num_forks]",
               flush=True)
         print("  <repo_url>: The full URL of the upstream GitHub repository "
               "(e.g., https://github.com/owner/repo)")
         print("  <username>: Your GitHub username (the owner of the origin "
               "fork you want to clone)")
+        print(
+            "  [num_forks]: Number of forks to add (default: 30, 'all' for all forks)")
         sys.exit(1)
 
     repo_url = sys.argv[1]
     username = sys.argv[2]
+    num_forks = sys.argv[3] if len(sys.argv) > 3 else '30'
 
     # Validate URL format
     if not repo_url.startswith('https://github.com/'):
@@ -135,9 +178,22 @@ def main():
     original_owner = parts[-2]
     repo_name = parts[-1].replace('.git', '')
 
+    # Convert num_forks to integer or None for 'all'
+    if num_forks.lower() == 'all':
+        num_forks = None
+    else:
+        try:
+            num_forks = int(num_forks)
+            if num_forks < 1:
+                raise ValueError("Number of forks must be positive")
+        except ValueError as e:
+            print(f"Invalid number of forks: {num_forks}", flush=True)
+            print("Must be a positive number or 'all'", flush=True)
+            sys.exit(1)
+
     clone_repo(repo_name, username)
     add_upstream_remote(repo_name, original_owner)
-    add_forks_as_remotes(repo_name, original_owner, username)
+    add_forks_as_remotes(repo_name, original_owner, username, num_forks)
 
 
 if __name__ == "__main__":
