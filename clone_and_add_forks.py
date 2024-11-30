@@ -74,11 +74,21 @@ def add_forks_as_remotes(repo_name, original_owner, username):
     result = subprocess.run(["git", "remote"], capture_output=True, text=True)
     existing_remotes = set(result.stdout.strip().split('\n'))
 
-    forks_url = ("https://api.github.com/repos/"
-                 f"{original_owner}/{repo_name}/forks")
-    print(f"Fetching forks from {forks_url}", flush=True)
+    # Get repository info including fork count
+    repo_url = f"https://api.github.com/repos/{original_owner}/{repo_name}"
+    response = requests.get(repo_url)
+    repo_info = response.json()
+    total_forks = repo_info['forks_count']
+
+    # Get forks (GitHub API paginates, typically 30 per page)
+    forks_url = f"{repo_url}/forks"
+    print(f"Repository has {total_forks} forks total", flush=True)
+    print(f"Fetching first page of forks from {forks_url}", flush=True)
+
     response = requests.get(forks_url)
     forks = response.json()
+    print(f"Processing {len(forks)} forks from first page", flush=True)
+
     for fork in forks:
         fork_owner = fork['owner']['login']
         if fork_owner == username or fork_owner in existing_remotes:
