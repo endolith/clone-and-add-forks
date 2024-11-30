@@ -154,5 +154,91 @@ def test_mismatched_upstream(temp_dir):
     assert "doesn't match expected" in str(exc_info.value)
 
 
+def test_custom_fork_count(temp_dir, argv):
+    """Test that the script respects custom fork count."""
+    from clone_and_add_forks import main
+
+    # Set up test with custom fork count
+    sys.argv = [
+        'clone_and_add_forks.py',
+        'https://github.com/octocat/Hello-World',
+        'endolith',
+        '5'  # Only get 5 forks
+    ]
+    main()
+
+    # Check what remotes were added
+    result = subprocess.run(
+        ["git", "remote", "-v"],
+        capture_output=True, text=True, check=True
+    )
+    remotes = result.stdout.strip().split('\n')
+    # Count unique remote names (each appears twice for fetch/push)
+    unique_remotes = set(line.split()[0] for line in remotes)
+
+    # Should have upstream, and 5 forks (including origin)
+    assert len(unique_remotes) == 6  # upstream + 5 forks
+    assert 'origin' in unique_remotes
+    assert 'upstream' in unique_remotes
+
+
+def test_invalid_fork_count(temp_dir, argv):
+    """Test that the script handles invalid fork counts properly."""
+    from clone_and_add_forks import main
+
+    # Test negative number
+    sys.argv = [
+        'clone_and_add_forks.py',
+        'https://github.com/octocat/Hello-World',
+        'endolith',
+        '-1'
+    ]
+    with pytest.raises(SystemExit) as exc_info:
+        main()
+    assert exc_info.value.code == 1
+
+    # Test non-numeric value
+    sys.argv = [
+        'clone_and_add_forks.py',
+        'https://github.com/octocat/Hello-World',
+        'endolith',
+        'invalid'
+    ]
+    with pytest.raises(SystemExit) as exc_info:
+        main()
+    assert exc_info.value.code == 1
+
+
+def test_all_forks_prompt(temp_dir, argv, monkeypatch):
+    """Test that the script prompts for confirmation when fetching all forks."""
+    from clone_and_add_forks import main
+
+    # Mock the input function to simulate user saying 'n' to the prompt
+    monkeypatch.setattr('builtins.input', lambda _: 'n')
+
+    sys.argv = [
+        'clone_and_add_forks.py',
+        'https://github.com/octocat/Hello-World',
+        'endolith',
+        'all'
+    ]
+
+    # Should exit gracefully when user declines
+    main()
+
+    # Verify only essential remotes were added
+    result = subprocess.run(
+        ["git", "remote", "-v"],
+        capture_output=True, text=True, check=True
+    )
+    remotes = result.stdout.strip().split('\n')
+    unique_remotes = set(line.split()[0] for line in remotes)
+
+    # Should only have origin and upstream
+    assert len(unique_remotes) == 2
+    assert 'origin' in unique_remotes
+    assert 'upstream' in unique_remotes
+
+
 if __name__ == '__main__':
     pytest.main([__file__, '-v'])
