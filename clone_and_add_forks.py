@@ -24,8 +24,7 @@ def clone_repo(repo_name, username):
     """
     clone_url = f"https://github.com/{username}/{repo_name}.git"
     if os.path.exists(repo_name):
-        print(f"Repository {repo_name} already exists, verifying remotes...",
-              flush=True)
+        print(f"Repository {repo_name} already exists, verifying remotes...")
         os.chdir(repo_name)
     else:
         print(f"Cloning repository from {clone_url}\n", flush=True)
@@ -53,7 +52,7 @@ def add_upstream_remote(repo_name, original_owner):
             raise ValueError(f"Upstream URL {current_upstream} doesn't match "
                              f"expected {upstream_url}")
     else:
-        print(f"Adding upstream remote {upstream_url}", flush=True)
+        print(f"Adding upstream remote {upstream_url}")
         subprocess.run(["git", "remote", "add", "upstream", upstream_url],
                        check=True)
 
@@ -81,14 +80,14 @@ def add_forks_as_remotes(repo_name, original_owner, username, num_forks=30):
     repo_info = response.json()
     total_forks = repo_info['forks_count']
 
-    print(f"\nRepository has {total_forks} forks total.", flush=True)
+    print(f"\nRepository has {total_forks} forks total.")
     if num_forks is None:
         print("fetching all of them...", flush=True)
         if total_forks > 100:
             response = input(f"Warning: Fetching {total_forks} forks. "
                              "Continue? (y/N) ")
             if response.lower() != 'y':
-                print("Aborted.", flush=True)
+                print("Aborted.")
                 return
     else:
         print(f"Fetching up to {num_forks} forks...", flush=True)
@@ -114,17 +113,16 @@ def add_forks_as_remotes(repo_name, original_owner, username, num_forks=30):
 
             # Skip if it's our own fork or if remote already exists
             if fork_owner == username or fork_owner in existing_remotes:
-                print(f"Skipping {fork_owner} (already exists)", flush=True)
+                print(f"Skipping {fork_owner} (already exists)")
                 if num_forks is not None and forks_processed >= num_forks:
                     print(f"Processed {num_forks} forks ({forks_added} added, "
-                          f"{forks_processed - forks_added} skipped).",
-                          flush=True)
+                          f"{forks_processed - forks_added} skipped).")
                     return
                 continue
 
             fork_url = fork['clone_url']
             print("Adding remote for fork owned by "
-                  f"{fork_owner}: {fork_url}", flush=True)
+                  f"{fork_owner}: {fork_url}")
             subprocess.run(
                 ["git", "remote", "add", fork_owner, fork_url], check=True)
             forks_added += 1
@@ -133,13 +131,13 @@ def add_forks_as_remotes(repo_name, original_owner, username, num_forks=30):
 
             if num_forks is not None and forks_processed >= num_forks:
                 print(f"Processed {num_forks} forks ({forks_added} added, "
-                      f"{forks_processed - forks_added} skipped).", flush=True)
+                      f"{forks_processed - forks_added} skipped).")
                 return
 
         page += 1
 
     print(f"Added {forks_added} new forks, skipped "
-          f"{forks_processed - forks_added}.", flush=True)
+          f"{forks_processed - forks_added}.")
 
 
 def main():
@@ -148,7 +146,7 @@ def main():
     """
     if len(sys.argv) not in (3, 4):
         print("Usage: python clone_and_add_forks.py "
-              "<repo_url> <username> [num_forks]", flush=True)
+              "<repo_url> <username> [num_forks]")
         print("  <repo_url>: The full URL of the upstream GitHub repository "
               "(e.g., https://github.com/owner/repo)")
         print("  <username>: Your GitHub username "
@@ -184,8 +182,8 @@ def main():
             if num_forks < 1:
                 raise ValueError("Number of forks must be positive")
         except ValueError as e:
-            print(f"Invalid number of forks: {num_forks}", flush=True)
-            print("Must be a positive number or 'all'", flush=True)
+            print(f"Invalid number of forks: {num_forks}")
+            print("Must be a positive number or 'all'")
             sys.exit(1)
 
     clone_repo(repo_name, username)
