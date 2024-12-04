@@ -1,52 +1,48 @@
 # clone_and_add_forks
 
-Clone a GitHub fork as origin, add upstream, and add all other forks as remotes. This essentially mirrors the entire "Network Graph" locally.
-
-## Features
-
-- Clone your fork of a repository as the `origin` remote.
-- Add the original repository as the `upstream` remote.
-- Automatically add all forks of the original repository as remotes, named as the fork owner's username.
+Clones your fork of a repository as the `origin` remote, adds the original repository as the `upstream` remote, and then adds all (or some) forks of the original repository as remotes, named as the fork owner's username.  This essentially mirrors the entire "Network Graph" locally.
 
 ## Usage
 
 ```shell
-python clone_and_add_forks.py <repo_url> <username>
+python clone_and_add_forks.py <repo_url> <username> [num_forks]
 ```
+
+Where:
+
+- `<repo_url>`: The full URL of the upstream GitHub repository (e.g., `https://github.com/owner/repo`)
+- `<username>`: Your GitHub username (the owner of the origin fork you want to clone)
+- `[num_forks]`: Optional. Number of forks to add (default: ~30, use 'all' for all forks)
 
 ## Example
 
 ```shell
-λ python clone_and_add_forks\clone_and_add_forks.py https://github.com/pfmonville/whole_history_rating endolith
-Cloning repository from https://github.com/endolith/whole_history_rating.git
-Cloning into 'whole_history_rating'...
-remote: Enumerating objects: 149, done.
-remote: Counting objects: 100% (43/43), done.
-remote: Compressing objects: 100% (21/21), done.
-Receiving objects:  90% (135/149)sed 31 (delta 19), pack-reused 106Receiving objects:  88% (132/149)
-Receiving objects: 100% (149/149), 54.02 KiB | 7.72 MiB/s, done.
-Resolving deltas: 100% (73/73), done.
-Adding upstream remote https://github.com/pfmonville/whole_history_rating.git
-remote: Enumerating objects: 2, done.
-remote: Counting objects: 100% (2/2), done.
-remote: Compressing objects: 100% (2/2), done.
-remote: Total 2 (delta 0), reused 2 (delta 0), pack-reused 0
-Unpacking objects: 100% (2/2), 300 bytes | 30.00 KiB/s, done.
-From https://github.com/pfmonville/whole_history_rating
- * [new branch]      master     -> upstream/master
- * [new tag]         1.6.1      -> 1.6.1
- * [new tag]         1.6.2      -> 1.6.2
-Fetching forks from https://api.github.com/repos/pfmonville/whole_history_rating/forks
-Adding remote for fork owned by ericwolter: https://github.com/ericwolter/whole_history_rating.git
-Adding remote for fork owned by vfg222: https://github.com/vfg222/whole_history_rating.git
-Adding remote for fork owned by damienld: https://github.com/damienld/whole_history_rating.git
-Adding remote for fork owned by zhaobohan96: https://github.com/zhaobohan96/whole_history_rating.git
-Adding remote for fork owned by rymuelle: https://github.com/rymuelle/whole_history_rating.git
-Adding remote for fork owned by markpaine: https://github.com/markpaine/whole_history_rating.git
-Adding remote for fork owned by glandfried: https://github.com/glandfried/whole_history_rating.git
-Adding remote for fork owned by joudinet: https://github.com/joudinet/whole_history_rating.git
-Adding remote for fork owned by PaulMainwood: https://github.com/PaulMainwood/whole_history_rating.git
-Adding remote for fork owned by domeav: https://github.com/domeav/whole_history_rating.git
-Adding remote for fork owned by jesesun: https://github.com/jesesun/whole_history_rating.git
-All remotes have been added successfully.
+λ python clone_and_add_forks\clone_and_add_forks.py https://github.com/octocat/Hello-World.git endolith 8
+Cloning repository from https://github.com/endolith/Hello-World.git
+
+Cloning into 'Hello-World'...
+remote: Enumerating objects: 7, done.
+remote: Total 7 (delta 0), reused 0 (delta 0), pack-reused 7 (from 1)
+Receiving objects: 100% (7/7), done.
+Adding upstream remote https://github.com/octocat/Hello-World.git
+remote: Enumerating objects: 6, done.
+remote: Counting objects: 100% (1/1), done.
+remote: Total 6 (delta 0), reused 0 (delta 0), pack-reused 5 (from 1)
+Unpacking objects: 100% (6/6), 898 bytes | 2.00 KiB/s, done.
+From https://github.com/octocat/Hello-World
+ * [new branch]      master          -> upstream/master
+ * [new branch]      octocat-patch-1 -> upstream/octocat-patch-1
+ * [new branch]      test            -> upstream/test
+
+Repository has 2485 forks total.
+Fetching up to 8 forks...
+Adding remote for fork owned by palvevaibhav: https://github.com/palvevaibhav/Hello-World.git
+Adding remote for fork owned by sirflyzoner76zzz: https://github.com/sirflyzoner76zzz/Hello-World.git
+Adding remote for fork owned by ruizseh: https://github.com/ruizseh/Hello-World.git
+Adding remote for fork owned by n0orw: https://github.com/n0orw/Hello-wor.git
+Adding remote for fork owned by RamsesAupart: https://github.com/RamsesAupart/Hello-World.git
+Adding remote for fork owned by idforclass: https://github.com/idforclass/Hello-World.git
+Skipping endolith (already exists)
+Adding remote for fork owned by clementjue: https://github.com/clementjue/Hello-World.git
+Processed 8 forks (7 added, 1 skipped).
 ```
