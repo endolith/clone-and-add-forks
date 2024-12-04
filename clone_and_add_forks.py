@@ -54,15 +54,16 @@ def add_upstream_remote(repo_name, original_owner):
                              f"expected {upstream_url}")
     else:
         print(f"Adding upstream remote {upstream_url}", flush=True)
-        subprocess.run(["git", "remote", "add", "upstream",
-                       upstream_url], check=True)
+        subprocess.run(["git", "remote", "add", "upstream", upstream_url],
+                       check=True)
 
     subprocess.run(["git", "fetch", "upstream"], check=True)
 
 
 def add_forks_as_remotes(repo_name, original_owner, username, num_forks=30):
     """
-    Add forks of the original repository as remotes, named by the fork owner's username.
+    Add forks of the original repository as remotes, named by the fork owner's
+    username.
 
     Parameters:
     repo_name (str): The name of the repository.
@@ -146,14 +147,14 @@ def main():
     Main function to clone the repository and add forks as remotes.
     """
     if len(sys.argv) not in (3, 4):
-        print("Usage: python clone_and_add_forks.py <repo_url> <username> [num_forks]",
-              flush=True)
+        print("Usage: python clone_and_add_forks.py "
+              "<repo_url> <username> [num_forks]", flush=True)
         print("  <repo_url>: The full URL of the upstream GitHub repository "
               "(e.g., https://github.com/owner/repo)")
-        print("  <username>: Your GitHub username (the owner of the origin "
-              "fork you want to clone)")
-        print(
-            "  [num_forks]: Number of forks to add (default: 30, 'all' for all forks)")
+        print("  <username>: Your GitHub username "
+              "(the owner of the origin fork you want to clone)")
+        print("  [num_forks]: Number of forks to add "
+              "(default: 30, 'all' for all forks)")
         sys.exit(1)
 
     repo_url = sys.argv[1]
@@ -162,18 +163,14 @@ def main():
 
     # Validate URL format
     if not repo_url.startswith('https://github.com/'):
-        raise ValueError(
-            f"Invalid GitHub URL: {repo_url}\n"
-            "URL must start with 'https://github.com/'"
-        )
+        raise ValueError(f"Invalid GitHub URL: {repo_url}\n"
+                         "URL must start with 'https://github.com/'")
 
     # Extract original owner and repo name from the URL
     parts = repo_url.split('/')
     if len(parts) < 5:  # ['https:', '', 'github.com', 'owner', 'repo']
-        raise ValueError(
-            f"Invalid GitHub URL format: {repo_url}\n"
-            "Expected format: https://github.com/owner/repo"
-        )
+        raise ValueError(f"Invalid GitHub URL format: {repo_url}\n"
+                         "Expected format: https://github.com/owner/repo")
 
     original_owner = parts[-2]
     repo_name = parts[-1].replace('.git', '')
