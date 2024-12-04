@@ -94,8 +94,9 @@ def test_hello_world_integration(temp_dir, argv):
     # Basic verification
     assert 'origin' in unique_remotes
     assert 'upstream' in unique_remotes
-    # Should have more than just origin + upstream
-    assert len(unique_remotes) > 3
+    # Should have upstream + origin + up to 30 forks, depending on whether
+    # user's fork was in the first 30
+    assert 31 <= len(unique_remotes)
 
 
 def test_existing_repository(temp_dir, argv):
@@ -156,8 +157,9 @@ def test_custom_fork_count(temp_dir, argv):
     # Check what remotes were added
     unique_remotes = get_unique_remotes()
 
-    # Should have upstream, and 5 forks (including origin)
-    assert len(unique_remotes) == 6  # upstream + 5 forks
+    # Should have upstream, origin, and 4 or 5 forks (depending on whether
+    # user's fork was in the first 5)
+    assert 6 <= len(unique_remotes) <= 7
     assert 'origin' in unique_remotes
     assert 'upstream' in unique_remotes
 
