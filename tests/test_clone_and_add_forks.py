@@ -55,7 +55,7 @@ def test_no_arguments(temp_dir, capsys, argv):
 
     # Check that usage message was printed
     captured = capsys.readouterr()
-    assert "Usage: python clone_and_add_forks.py <repo_url> <username>" in captured.out
+    assert "Usage: clone-and-add-forks <repo_url> <username>" in captured.out
     assert "<repo_url>: The full URL of the upstream GitHub repository" in captured.out
     assert "<username>: Your GitHub username" in captured.out
 

@@ -145,8 +145,7 @@ def main():
     Main function to clone the repository and add forks as remotes.
     """
     if len(sys.argv) not in (3, 4):
-        print("Usage: python clone_and_add_forks.py "
-              "<repo_url> <username> [num_forks]")
+        print("Usage: clone-and-add-forks <repo_url> <username> [num_forks]")
         print("  <repo_url>: The full URL of the upstream GitHub repository "
               "(e.g., https://github.com/owner/repo)")
         print("  <username>: Your GitHub username "

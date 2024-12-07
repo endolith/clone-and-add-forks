@@ -1,9 +1,15 @@
-# clone_and_add_forks
+# clone-and-add-forks
 
 Clones your fork of a repository as the `origin` remote, adds the original repository as the `upstream` remote, and then adds all (or some) forks of the original repository as remotes, named as the fork owner's username.  This essentially mirrors the entire "Network Graph" locally.
 
 ## Usage
 
+After installation:
+```shell
+clone-and-add-forks <repo_url> <username> [num_forks]
+```
+
+Or run the script directly:
 ```shell
 python clone_and_add_forks.py <repo_url> <username> [num_forks]
 ```
@@ -17,7 +23,7 @@ Where:
 ## Example
 
 ```shell
-λ python clone_and_add_forks\clone_and_add_forks.py https://github.com/octocat/Hello-World.git endolith 8
+λ clone-and-add-forks https://github.com/octocat/Hello-World.git endolith 8
 Cloning repository from https://github.com/endolith/Hello-World.git
 
 Cloning into 'Hello-World'...

@@ -17,6 +17,8 @@ dependencies = [
 ]
 classifiers = [
     "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Natural Language :: English",
     "Intended Audience :: Developers",
     "Topic :: Software Development :: Version Control :: Git",
     "License :: CC0 1.0 Universal (CC0 1.0) Public Domain Dedication",
@@ -35,6 +37,13 @@ test = [
     "pytest",
     "pytest-timeout",
 ]
+
+[project.urls]
+"Homepage" = "https://github.com/endolith/clone-and-add-forks"
+"Bug Tracker" = "https://github.com/endolith/clone-and-add-forks/issues"
+
+[project.scripts]
+clone-and-add-forks = "clone_and_add_forks:main"
 
 [tool.pytest.ini_options]
 timeout = 15
