@@ -9,7 +9,8 @@ import pytest
 try:
     import pytest_timeout
 except ImportError:
-    pytest.fail("pytest-timeout is required for these tests to prevent infinite downloads")
+    pytest.fail("pytest-timeout is required for these tests to prevent "
+                "infinite downloads")
 
 from clone_and_add_forks import add_upstream_remote, main
 
@@ -195,6 +196,7 @@ def test_invalid_fork_count(temp_dir, argv):
     with pytest.raises(SystemExit) as exc_info:
         main()
     assert exc_info.value.code == 1
+
 
 @pytest.mark.timeout(15)
 def test_all_forks_prompt(temp_dir, argv, monkeypatch):
