@@ -2,6 +2,18 @@
 
 Clones your fork of a repository as the `origin` remote, adds the original repository as the `upstream` remote, and then adds all (or some) forks of the original repository as remotes, named as the fork owner's username.  This essentially mirrors the entire "Network Graph" locally.
 
+## Installation
+
+### Using pipx (recommended)
+```shell
+pipx install git+https://github.com/endolith/clone-and-add-forks.git
+```
+
+### Using pip
+```shell
+pip install git+https://github.com/endolith/clone-and-add-forks.git
+```
+
 ## Usage
 
 After installation:
