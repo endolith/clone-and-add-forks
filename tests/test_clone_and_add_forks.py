@@ -12,7 +12,42 @@ except ImportError:
     pytest.fail("pytest-timeout is required for these tests to prevent "
                 "infinite downloads")
 
-from clone_and_add_forks import add_upstream_remote, main
+from clone_and_add_forks import add_upstream_remote, main, parse_github_owner_repo
+
+
+def test_parse_github_https_and_ssh():
+    assert parse_github_owner_repo(
+        "https://github.com/octocat/Hello-World.git"
+    ) == ("octocat", "Hello-World")
+    assert parse_github_owner_repo(
+        "https://github.com/octocat/Hello-World"
+    ) == ("octocat", "Hello-World")
+    assert parse_github_owner_repo(
+        "https://oauth2:token@github.com/octocat/Hello-World.git"
+    ) == ("octocat", "Hello-World")
+    assert parse_github_owner_repo(
+        "git@github.com:octocat/Hello-World.git"
+    ) == ("octocat", "Hello-World")
+
+
+def test_optional_username_when_repo_exists(temp_dir, argv):
+    """Omit username on a later run when the clone and origin already exist."""
+    sys.argv = [
+        'clone_and_add_forks.py',
+        'https://github.com/octocat/Hello-World',
+        'endolith',
+    ]
+    main()
+
+    sys.argv = [
+        'clone_and_add_forks.py',
+        'https://github.com/octocat/Hello-World',
+    ]
+    main()
+
+    unique_remotes = get_unique_remotes()
+    assert 'origin' in unique_remotes
+    assert 'upstream' in unique_remotes
 
 
 @pytest.fixture
@@ -56,16 +91,16 @@ def test_no_arguments(temp_dir, capsys, argv):
 
     # Check that usage message was printed
     captured = capsys.readouterr()
-    assert "Usage: clone-and-add-forks <repo_url> <username>" in captured.out
-    assert "<repo_url>: The full URL of the upstream GitHub repository" in captured.out
-    assert "<username>: Your GitHub username" in captured.out
+    assert "Usage: clone-and-add-forks [<repo_url>] [<username>]" in captured.out
+    assert "<repo_url>: Optional. Full URL of the upstream GitHub repository" in captured.out
+    assert "<username>: Optional if origin points at your fork" in captured.out
 
 
 def test_invalid_url(temp_dir, argv):
     """Test that the script handles invalid URLs gracefully."""
     sys.argv = [
         'clone_and_add_forks.py',
-        'not_a_url',
+        'https://example.com/not/github',
         'username'
     ]
     with pytest.raises(ValueError) as exc_info:
