@@ -1,3 +1,4 @@
+import importlib.util
 import os
 import subprocess
 import sys
@@ -5,10 +6,7 @@ import tempfile
 
 import pytest
 
-# Verify that pytest-timeout is installed
-try:
-    import pytest_timeout
-except ImportError:
+if importlib.util.find_spec("pytest_timeout") is None:
     pytest.fail("pytest-timeout is required for these tests to prevent "
                 "infinite downloads")
 
