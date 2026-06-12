@@ -37,6 +37,9 @@ test = [
     "pytest",
     "pytest-timeout",
 ]
+dev = [
+    "ruff",
+]
 
 [project.urls]
 "Homepage" = "https://github.com/endolith/clone-and-add-forks"
