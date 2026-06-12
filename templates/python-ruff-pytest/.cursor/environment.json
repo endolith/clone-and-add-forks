@@ -1,0 +1,4 @@
+{
+  "install": "pip install -e '.[test]' && pip install ruff pytest",
+  "start": "echo ready"
+}
